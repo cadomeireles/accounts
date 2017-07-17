@@ -1,10 +1,13 @@
+import hashlib
 import uuid
+from random import random
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from .email import send_email
 from .managers import UserManager
 
 
@@ -64,3 +67,42 @@ class User(AbstractBaseUser, PermissionsMixin):
         Split name and return first result
         """
         return self.name.split()[0]
+
+
+class EmailConfirmation(models.Model):
+    """
+    Confirmation for user email
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='email_confirmations',
+    )
+    token = models.CharField(max_length=40)
+    is_confirmed = models.BooleanField(default=False)
+
+    def send(self):
+        """
+        Send email with link to confirm email
+        """
+        send_email(
+            _('Email confirmation'),
+            [self.user.email],
+            'accounts/emails/email_confirmation.html',
+            {'token': self.token},
+        )
+
+    def save(self, *args, **kwargs):
+        """
+        Save EmailConfirmation and generate token
+        """
+        created = not self.pk
+
+        # Call default save method
+        super().save(*args, **kwargs)
+
+        # Generate token on create
+        if created:
+            token = str(random()) + self.user.email
+            self.token = hashlib.sha1(token.encode()).hexdigest()
+            self.save()
