@@ -8,7 +8,8 @@ A Django app for user accounts.
 3. Set `AUTH_USER_MODEL` on your settings to `accounts.User`.
 4. Run the migrations.
 5. Include the `accounts.urls` to your main URLconf with namespace `accounts`.
-6. Configure your project to be able to send email.
+6. Add `accounts.backends.ConfirmationTokenAuthenticationBackend` to `AUTHENTICATION_BACKENDS`.
+7. Configure your project to be able to send email.
 
 ## Running tests
 1. Install [pytest-django](https://pytest-django.readthedocs.io):
