@@ -1,5 +1,6 @@
+from django.contrib import auth
 from django.core.urlresolvers import reverse_lazy as r
-from django.views.generic import CreateView
+from django.views.generic import CreateView, RedirectView
 
 from .forms import SignupForm
 
@@ -24,3 +25,15 @@ class SignupView(CreateView):
         email_confirmation.send()
 
         return super().form_valid(form)
+
+
+class ConfirmEmailView(RedirectView):
+    """
+    Confirm email used on signup
+    """
+
+    def get_redirect_url(self, token):
+        # Authenticate user
+        auth.authenticate(token=token)
+
+        return r('accounts:signup')

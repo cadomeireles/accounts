@@ -4,6 +4,7 @@ from random import random
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.core.urlresolvers import reverse as r
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -85,11 +86,12 @@ class EmailConfirmation(models.Model):
         """
         Send email with link to confirm email
         """
+        link = r('accounts:confirm_email', kwargs={'token': self.token})
         send_email(
             _('Email confirmation'),
             [self.user.email],
             'accounts/emails/email_confirmation.html',
-            {'token': self.token},
+            {'link': link},
         )
 
     def save(self, *args, **kwargs):
